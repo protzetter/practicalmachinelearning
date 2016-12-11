@@ -1,7 +1,7 @@
 ---
 title: "Practical Machine Learning Week 4 Project"
 author: "Patrick Rotzetter"
-date: "6 décembre 2016"
+date: "11 December 2016"
 output: html_document
 ---
 
@@ -17,13 +17,106 @@ The goal of your project is to predict the manner in which they did the exercise
 ```{r trainData, eval=FALSE, include=FALSE}
 summary(trainData)
 ```
+## Loading the data
+Test and training data are loaded into data frames and duplicates are created for data clean up and analysis
 
-## Analysis
+###Read training and test files
 
-You can also embed plots, for example:
+```
+trainData<-read.csv("pml-training.csv",header=TRUE,sep = ",", na.strings = "#DIV/0!")
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+testData<-read.csv("pml-testing.csv",header=TRUE,sep = ",", na.strings = "#DIV/0!")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Duplicate original data sets for data investigation
+```
+trainDataCheck<-trainData
+
+testDataCheck<-testData
+```
+
+
+### Data clean up
+
+The data set show a high number of NAs values and this needs a further analysis on the variables
+
+First let us look at each column and see what is the percentage of NAs compared to teh number of observations:
+
+# Determine percentage  of NAs in each column
+```
+naPercentage <-sapply(trainDataCheck, function(y) sum(length(which(is.na(y))))/length(y))
+```
+Most of columns with NAs show 97% or mroe NAs, so they can be removed from the data set
+
+# Find columns with more than 97% NAs
+```
+AllNA <- which(naPercentage>0.97)
+```
+
+# Remove columns with more than 97% NAs from train and test data
+```
+trainData<-select(trainData,-c(1:7))
+testData<-select(testData,-c(1:7))
+trainData<-trainData[,-AllNA]
+testData<-testData[,-AllNA]
+```
+
+### Evaluating prediction models
+## Adaboost
+Let us try with the adaBoost algorithm as it seems a good canidate for class prediction:
+```
+modBoost = boosting.cv( classe ~ ., data = trainData[],v=1000)
+```
+
+Let su look at the model confusion and rreor rate
+
+```
+modBoost$confusion
+
+
+               Observed Class
+Predicted Class    A    B    C    D    E
+              A 5444  245   14   44   11
+              B   53 3290  156   29   51
+              C   39  222 3159  131  111
+              D   26   34   92 2989  108
+              E   18    6    1   23 3326
+
+modBoost$error          
+
+[1] 0.07206197
+```
+
+## Random Forest
+
+# Train a random forest model, cross validation will be done automatically using OOB observations
+```
+set.seed(1000)
+modRF <- randomForest(classe ~ ., data = trainData, ntree = 100, mtry = 3, importance = TRUE)
+modRF$confusion
+
+Confusion matrix for Random Forest
+
+     A    B    C    D    E  class.error
+A 5578    1    0    0    1 0.0003584229
+B   15 3774    8    0    0 0.0060574137
+C    0   18 3398    6    0 0.0070134424
+D    0    0   36 3178    2 0.0118159204
+E    0    0    1    8 3598 0.0024951483
+```
+The confusion matrix and error rate looks much better for the random forest model, hence selecting random forest for prediction
+
+
+```
+# Predict using trained model
+prediction <- predict(modRF, newdata = testData)
+
+# write outcome in distincs files for the quizz
+n = length(prediction)
+for(i in 1:n){
+        filename = paste0("problem_id_",i,".txt")
+        write.table(prediction[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+}
+```
+
+
