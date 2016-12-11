@@ -36,24 +36,24 @@ testDataCheck<-testData
 ```
 
 
-### Data clean up
+## Data clean up
 
 The data set show a high number of NAs values and this needs a further analysis on the variables
 
 First let us look at each column and see what is the percentage of NAs compared to teh number of observations:
 
-# Determine percentage  of NAs in each column
+### Determine percentage  of NAs in each column
 ```
 naPercentage <-sapply(trainDataCheck, function(y) sum(length(which(is.na(y))))/length(y))
 ```
 Most of columns with NAs show 97% or mroe NAs, so they can be removed from the data set
 
-# Find columns with more than 97% NAs
+### Find columns with more than 97% NAs
 ```
 AllNA <- which(naPercentage>0.97)
 ```
 
-# Remove columns with more than 97% NAs from train and test data
+### Remove columns with more than 97% NAs from train and test data
 ```
 trainData<-select(trainData,-c(1:7))
 testData<-select(testData,-c(1:7))
@@ -61,8 +61,8 @@ trainData<-trainData[,-AllNA]
 testData<-testData[,-AllNA]
 ```
 
-### Evaluating prediction models
-## Adaboost
+## Evaluating prediction models
+### Adaboost
 Let us try with the adaBoost algorithm as it seems a good canidate for class prediction:
 ```
 modBoost = boosting.cv( classe ~ ., data = trainData[],v=1000)
@@ -87,9 +87,11 @@ modBoost$error
 [1] 0.07206197
 ```
 
-## Random Forest
+### Random Forest
 
-# Train a random forest model, cross validation will be done automatically using OOB observations
+## Build the model and predict
+
+### Train a random forest model, cross validation will be done automatically using OOB observations
 ```
 set.seed(1000)
 modRF <- randomForest(classe ~ ., data = trainData, ntree = 100, mtry = 3, importance = TRUE)

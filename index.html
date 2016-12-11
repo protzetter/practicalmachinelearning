@@ -143,32 +143,32 @@ testData&lt;-read.csv(&quot;pml-testing.csv&quot;,header=TRUE,sep = &quot;,&quot
 
 testDataCheck&lt;-testData</code></pre>
 </div>
-<div id="data-clean-up" class="section level3">
-<h3>Data clean up</h3>
+</div>
+<div id="data-clean-up" class="section level2">
+<h2>Data clean up</h2>
 <p>The data set show a high number of NAs values and this needs a further analysis on the variables</p>
 <p>First let us look at each column and see what is the percentage of NAs compared to teh number of observations:</p>
-</div>
-</div>
-<div id="determine-percentage-of-nas-in-each-column" class="section level1">
-<h1>Determine percentage of NAs in each column</h1>
+<div id="determine-percentage-of-nas-in-each-column" class="section level3">
+<h3>Determine percentage of NAs in each column</h3>
 <pre><code>naPercentage &lt;-sapply(trainDataCheck, function(y) sum(length(which(is.na(y))))/length(y))</code></pre>
 <p>Most of columns with NAs show 97% or mroe NAs, so they can be removed from the data set</p>
 </div>
-<div id="find-columns-with-more-than-97-nas" class="section level1">
-<h1>Find columns with more than 97% NAs</h1>
+<div id="find-columns-with-more-than-97-nas" class="section level3">
+<h3>Find columns with more than 97% NAs</h3>
 <pre><code>AllNA &lt;- which(naPercentage&gt;0.97)</code></pre>
 </div>
-<div id="remove-columns-with-more-than-97-nas-from-train-and-test-data" class="section level1">
-<h1>Remove columns with more than 97% NAs from train and test data</h1>
+<div id="remove-columns-with-more-than-97-nas-from-train-and-test-data" class="section level3">
+<h3>Remove columns with more than 97% NAs from train and test data</h3>
 <pre><code>trainData&lt;-select(trainData,-c(1:7))
 testData&lt;-select(testData,-c(1:7))
 trainData&lt;-trainData[,-AllNA]
 testData&lt;-testData[,-AllNA]</code></pre>
-<div id="evaluating-prediction-models" class="section level3">
-<h3>Evaluating prediction models</h3>
 </div>
-<div id="adaboost" class="section level2">
-<h2>Adaboost</h2>
+</div>
+<div id="evaluating-prediction-models" class="section level2">
+<h2>Evaluating prediction models</h2>
+<div id="adaboost" class="section level3">
+<h3>Adaboost</h3>
 <p>Let us try with the adaBoost algorithm as it seems a good canidate for class prediction:</p>
 <pre><code>modBoost = boosting.cv( classe ~ ., data = trainData[],v=1000)</code></pre>
 <p>Let su look at the model confusion and rreor rate</p>
@@ -187,12 +187,14 @@ modBoost$error
 
 [1] 0.07206197</code></pre>
 </div>
-<div id="random-forest" class="section level2">
-<h2>Random Forest</h2>
+<div id="random-forest" class="section level3">
+<h3>Random Forest</h3>
 </div>
 </div>
-<div id="train-a-random-forest-model-cross-validation-will-be-done-automatically-using-oob-observations" class="section level1">
-<h1>Train a random forest model, cross validation will be done automatically using OOB observations</h1>
+<div id="build-the-model-and-predict" class="section level2">
+<h2>Build the model and predict</h2>
+<div id="train-a-random-forest-model-cross-validation-will-be-done-automatically-using-oob-observations" class="section level3">
+<h3>Train a random forest model, cross validation will be done automatically using OOB observations</h3>
 <pre><code>set.seed(1000)
 modRF &lt;- randomForest(classe ~ ., data = trainData, ntree = 100, mtry = 3, importance = TRUE)
 modRF$confusion
@@ -215,6 +217,7 @@ for(i in 1:n){
         filename = paste0(&quot;problem_id_&quot;,i,&quot;.txt&quot;)
         write.table(prediction[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
 }</code></pre>
+</div>
 </div>
 
 
